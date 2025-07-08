@@ -296,37 +296,37 @@
   .attendance-container {
     padding: 20px 0;
   }
-  
+
   .attendance-title {
     font-size: 2rem;
   }
-  
+
   .attendance-card-header {
     padding: 20px 25px;
   }
-  
+
   .attendance-card-body {
     padding: 25px;
   }
-  
+
   .attendance-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .attendance-filter-group {
     width: 100%;
   }
-  
+
   .attendance-stats {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .attendance-table {
     font-size: 0.9rem;
   }
-  
+
   .attendance-table th,
   .attendance-table td {
     padding: 10px;
@@ -337,20 +337,20 @@
   .attendance-card-header {
     padding: 15px 20px;
   }
-  
+
   .attendance-card-body {
     padding: 20px;
   }
-  
+
   .attendance-table {
     font-size: 0.8rem;
   }
-  
+
   .attendance-table th,
   .attendance-table td {
     padding: 8px;
   }
-  
+
   .attendance-stat-value {
     font-size: 2rem;
   }
@@ -386,6 +386,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -393,8 +394,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .badge {
@@ -404,13 +410,17 @@
   font-size: 0.9em;
   color: #fff;
 }
+
 .badge-present {
   background: #4caf50;
 }
+
 .badge-absent {
   background: #f44336;
 }
-.attendance-edit-btn, .attendance-save-btn {
+
+.attendance-edit-btn,
+.attendance-save-btn {
   margin-top: 16px;
   padding: 8px 20px;
   border: none;
@@ -421,9 +431,12 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.attendance-edit-btn:hover, .attendance-save-btn:hover {
+
+.attendance-edit-btn:hover,
+.attendance-save-btn:hover {
   background: #125ea2;
 }
+
 .attendance-last-updated {
   font-size: 0.95em;
   color: #666;
@@ -439,12 +452,15 @@
   transition: border 0.2s;
   margin-left: 8px;
 }
+
 .styled-select:focus {
   border: 1.5px solid #1976d2;
   outline: none;
   background: #fff;
 }
-.row-edit-btn, .row-save-btn {
+
+.row-edit-btn,
+.row-save-btn {
   background: none;
   border: none;
   padding: 2px 6px;
@@ -452,11 +468,38 @@
   font-size: 1.2em;
   transition: background 0.2s;
 }
+
 .row-edit-btn:hover {
   background: #e3f2fd;
   border-radius: 4px;
 }
+
 .row-save-btn:hover {
   background: #e8f5e9;
   border-radius: 4px;
-} 
+}
+
+/* Back Button (visible on light background) */
+.back-btn {
+  background: linear-gradient(135deg, #4c51bf 0%, #5b6bd8 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.back-btn:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+}

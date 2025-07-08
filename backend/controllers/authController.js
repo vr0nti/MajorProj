@@ -36,7 +36,9 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).populate('department', 'name code');
+    const user = await User.findOne({ email })
+      .populate('department', 'name code')
+      .populate('class', 'name fullName');
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
@@ -56,7 +58,8 @@ exports.login = async (req, res) => {
         department: user.department?._id || user.department,
         departmentName: user.department?.name,
         departmentCode: user.department?.code,
-        class: user.class,
+        class: user.class?._id || user.class,
+        className: user.class?.fullName || user.class?.name,
         status: user.status
       },
     });
@@ -67,7 +70,10 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select("-password").populate('department', 'name code');
+    const user = await User.findById(req.user.userId)
+      .select("-password")
+      .populate('department', 'name code')
+      .populate('class', 'name fullName');
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -80,7 +86,8 @@ exports.getMe = async (req, res) => {
       department: user.department?._id || user.department,
       departmentName: user.department?.name,
       departmentCode: user.department?.code,
-      class: user.class,
+      class: user.class?._id || user.class,
+      className: user.class?.fullName || user.class?.name,
       status: user.status,
       phone: user.phone,
       specialization: user.specialization,

@@ -310,44 +310,44 @@
   .timetable-container {
     padding: 20px 0;
   }
-  
+
   .timetable-title {
     font-size: 2rem;
   }
-  
+
   .timetable-card-header {
     padding: 20px 25px;
   }
-  
+
   .timetable-card-body {
     padding: 25px;
   }
-  
+
   .timetable-grid {
     grid-template-columns: 80px repeat(5, 1fr);
     font-size: 0.8rem;
   }
-  
+
   .timetable-header-cell,
   .timetable-time-cell,
   .timetable-slot {
     padding: 10px 5px;
   }
-  
+
   .timetable-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .timetable-filter-group {
     width: 100%;
   }
-  
+
   .timetable-stats {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .timetable-legend {
     flex-direction: column;
     align-items: center;
@@ -359,36 +359,36 @@
   .timetable-card-header {
     padding: 15px 20px;
   }
-  
+
   .timetable-card-body {
     padding: 20px;
   }
-  
+
   .timetable-grid {
     grid-template-columns: 60px repeat(5, 1fr);
     font-size: 0.7rem;
   }
-  
+
   .timetable-header-cell,
   .timetable-time-cell,
   .timetable-slot {
     padding: 8px 3px;
     min-height: 60px;
   }
-  
+
   .timetable-class-name {
     font-size: 0.7rem;
   }
-  
+
   .timetable-class-teacher,
   .timetable-class-room {
     font-size: 0.6rem;
   }
-  
+
   .timetable-stat-value {
     font-size: 2rem;
   }
-  
+
   .timetable-empty-icon {
     font-size: 3rem;
   }
@@ -424,6 +424,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -431,8 +432,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Enhanced Faculty Timetable Table Styles */
@@ -446,12 +452,15 @@
   box-shadow: 0 4px 24px rgba(168, 237, 234, 0.12);
   margin-bottom: 20px;
 }
-.timetable-table.enhanced th, .timetable-table.enhanced td {
+
+.timetable-table.enhanced th,
+.timetable-table.enhanced td {
   padding: 14px 10px;
   text-align: center;
   font-size: 1rem;
   border-bottom: 1px solid #e9ecef;
 }
+
 .timetable-table.enhanced th {
   background: linear-gradient(135deg, #a8edea, #fed6e3);
   color: #333;
@@ -459,9 +468,11 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
 .timetable-table.enhanced tr:last-child td {
   border-bottom: none;
 }
+
 .timetable-slot-table.my-period {
   background: linear-gradient(135deg, #a8edea 60%, #fed6e3 100%);
   color: #222;
@@ -470,18 +481,22 @@
   box-shadow: 0 2px 8px rgba(168, 237, 234, 0.08);
   transition: background 0.3s;
 }
+
 .timetable-slot-table.my-period .period-details {
   font-size: 0.95rem;
   line-height: 1.4;
 }
+
 .timetable-slot-table.not-my-period {
   background: #f8f9fa;
   color: #bbb;
   font-style: italic;
 }
+
 .timetable-slot-table .no-period {
   opacity: 0.5;
 }
+
 .timetable-class-meta {
   font-size: 0.95rem;
   color: #666;
@@ -490,14 +505,44 @@
 
 /* Responsive for table */
 @media (max-width: 900px) {
-  .timetable-table.enhanced th, .timetable-table.enhanced td {
+
+  .timetable-table.enhanced th,
+  .timetable-table.enhanced td {
     font-size: 0.85rem;
     padding: 10px 4px;
   }
 }
+
 @media (max-width: 600px) {
-  .timetable-table.enhanced th, .timetable-table.enhanced td {
+
+  .timetable-table.enhanced th,
+  .timetable-table.enhanced td {
     font-size: 0.75rem;
     padding: 7px 2px;
   }
-} 
+}
+
+/* Back Button (visible on light background) */
+.back-btn {
+  background: linear-gradient(135deg, #48b8b6 0%, #f3a2bf 100%);
+  color: #333333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4);
+}
+
+.back-btn:hover {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 237, 234, 0.5);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(168, 237, 234, 0.3);
+}

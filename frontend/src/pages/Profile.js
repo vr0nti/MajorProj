@@ -12,8 +12,8 @@ export default function Profile() {
 
   return (
     <div className="profile-container">
-      <button 
-        onClick={() => navigate('/dashboard')} 
+      <button
+        onClick={() => navigate('/dashboard')}
         className="back-btn"
       >
         Back to Dashboard
@@ -27,8 +27,12 @@ export default function Profile() {
                 <p><strong>Name:</strong> {user.name}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Role:</strong> {user.role}</p>
-                {user.department && <p><strong>Department:</strong> {user.department.name || user.department}</p>}
-                {user.class && <p><strong>Class:</strong> {user.class.fullName || user.class}</p>}
+                {(user.departmentName || user.department?.name || user.department) && (
+                  <p><strong>Department:</strong> {user.departmentName || user.department?.name || user.department}</p>
+                )}
+                {(user.className || user.class?.fullName || user.class) && (
+                  <p><strong>Class:</strong> {user.className || user.class?.fullName || user.class}</p>
+                )}
                 {user.role === 'faculty' && (
                   <>
                     <p><strong>Is Class Teacher:</strong> {user.isClassTeacher ? 'Yes' : 'No'}</p>

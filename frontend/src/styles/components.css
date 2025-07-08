@@ -763,4 +763,29 @@
     padding: 10px 12px;
     font-size: 0.9rem;
   }
+}
+
+/* Global Back Button */
+.back-btn {
+  background: #4f46e5 !important; /* Indigo-600 */
+  color: #ffffff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35) !important;
+}
+
+.back-btn:hover {
+  background: #6366f1 !important; /* Indigo-500 */
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45) !important;
+}
+
+.back-btn:active {
+  background: #4338ca !important; /* Indigo-700 */
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 10px rgba(67, 56, 202, 0.3) !important;
 } 
