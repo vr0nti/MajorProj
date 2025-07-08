@@ -1,0 +1,277 @@
+/* Register Page Specific Styles */
+.register-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.register-card {
+  background: var(--white);
+  border-radius: 15px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  animation: slideInUp 0.6s ease-out;
+}
+
+.register-card-header {
+  background: linear-gradient(135deg, var(--success-color), #20c997);
+  color: var(--white);
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.register-card-header h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.register-card-body {
+  padding: 40px 30px;
+}
+
+.register-form-group {
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.register-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--dark-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.register-form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.register-form-control:focus {
+  outline: none;
+  border-color: var(--success-color);
+  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  transform: translateY(-2px);
+}
+
+.register-form-control::placeholder {
+  color: #adb5bd;
+}
+
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--success-color), #20c997);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.register-btn:active {
+  transform: translateY(0);
+}
+
+.register-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register-btn .spinner-border {
+  margin-right: 8px;
+  color: var(--white);
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.register-footer a {
+  color: var(--success-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Role selection styles */
+.register-role-selector {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.register-role-option {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.register-role-option:hover {
+  border-color: var(--success-color);
+  background-color: #f0fff4;
+}
+
+.register-role-option.selected {
+  border-color: var(--success-color);
+  background-color: #d4edda;
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.register-role-option input[type="radio"] {
+  display: none;
+}
+
+.register-role-label {
+  font-weight: 500;
+  cursor: pointer;
+  display: block;
+}
+
+/* Department selection styles */
+.register-department-select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.register-department-select:focus {
+  outline: none;
+  border-color: var(--success-color);
+  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .register-container {
+    padding: 10px;
+  }
+  
+  .register-card {
+    max-width: 100%;
+    margin: 0 10px;
+  }
+  
+  .register-card-body {
+    padding: 30px 20px;
+  }
+  
+  .register-card-header {
+    padding: 25px 15px;
+  }
+  
+  .register-card-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .register-role-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Error states */
+.register-form-control.error {
+  border-color: var(--danger-color);
+  background-color: #fff5f5;
+}
+
+.register-error-message {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.register-error-message::before {
+  content: "⚠";
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+/* Success states */
+.register-form-control.success {
+  border-color: var(--success-color);
+  background-color: #f8fff9;
+}
+
+/* Loading state */
+.register-btn.loading {
+  pointer-events: none;
+}
+
+.register-btn.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--white);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
