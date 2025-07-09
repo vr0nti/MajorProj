@@ -61,9 +61,9 @@ export default function Classes() {
       if (filters.semester) classParams.append('semester', filters.semester);
       
       const [classesRes, departmentsRes, facultyRes] = await Promise.all([
-        api.get(`/classes/all?${classParams}`),
-        api.get('/departments/all'),
-        api.get('/users/faculty')
+        api.get(`/class/all?${classParams}`),
+        api.get('/department/all'),
+        api.get('/user/faculty')
       ]);
 
       setClasses(classesRes.data);
@@ -109,7 +109,7 @@ export default function Classes() {
   const handleEditClass = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/classes/${selectedClass._id}`, {
+      await api.put(`/class/${selectedClass._id}`, {
         ...formData,
         subjects: subjectFacultyAssignments.filter(a => a.faculty)
       });
@@ -132,7 +132,7 @@ export default function Classes() {
 
   const handleDeleteClass = async () => {
     try {
-      await api.delete(`/classes/${selectedClass._id}`);
+      await api.delete(`/class/${selectedClass._id}`);
       setShowDeleteModal(false);
       setSelectedClass(null);
       fetchData();

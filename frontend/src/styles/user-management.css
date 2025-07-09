@@ -124,6 +124,7 @@
     opacity: 0;
     transform: translateY(-50px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -224,7 +225,8 @@
   border-radius: 0 0 15px 15px;
 }
 
-.cancel-btn, .submit-btn {
+.cancel-btn,
+.submit-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -266,29 +268,29 @@
   .user-management-container {
     padding: 15px;
   }
-  
+
   .header-content h1 {
     font-size: 2rem;
   }
-  
+
   .user-management-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .add-btn {
     min-width: 200px;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .modal {
     width: 95%;
     margin: 10px;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
@@ -298,10 +300,184 @@
   .header-content h1 {
     font-size: 1.8rem;
   }
-  
+
   .add-btn {
     min-width: 180px;
     padding: 12px 20px;
     font-size: 14px;
   }
-} 
+}
+
+/* Filters */
+.user-management-container .filters-section {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.user-management-container .filter-group {
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+.user-management-container .filter-group select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+}
+
+/* Stats */
+.user-management-container .stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.user-management-container .stat-card {
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #333;
+  border-radius: 12px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  border-left: 4px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.user-management-container .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Colored borders */
+.user-management-container .stat-card.total {
+  border-left-color: #22c55e;
+}
+
+.user-management-container .stat-card.student {
+  border-left-color: #4ade80;
+}
+
+.user-management-container .stat-card.faculty {
+  border-left-color: #3b82f6;
+}
+
+.user-management-container .stat-card.dept-admin {
+  border-left-color: #f59e0b;
+}
+
+.user-management-container .stat-card.admin {
+  border-left-color: #ef4444;
+}
+
+.user-management-container .stat-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.75rem;
+  color: #22c55e;
+}
+
+.user-management-container .stat-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.user-management-container .stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+/* icon background colours */
+.user-management-container .total .stat-icon { background: #22c55e; }
+.user-management-container .student .stat-icon { background: #4ade80; }
+.user-management-container .faculty .stat-icon { background: #3b82f6; }
+.user-management-container .dept-admin .stat-icon { background: #f59e0b; }
+.user-management-container .admin .stat-icon { background: #ef4444; }
+
+/* Users Table */
+.user-management-container .users-table {
+  overflow-x: auto;
+}
+
+.user-management-container .users-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.user-management-container .users-table thead {
+  background: #4f46e5;
+  color: white;
+}
+
+.user-management-container .users-table th,
+.user-management-container .users-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.user-management-container .users-table tbody tr:nth-child(even) {
+  background: #f3f4f6;
+}
+
+.user-management-container .role-badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: white;
+}
+
+.user-management-container .role-student {
+  background: #10b981;
+}
+
+.user-management-container .role-faculty {
+  background: #3b82f6;
+}
+
+.user-management-container .role-departmentAdmin {
+  background: #f59e0b;
+}
+
+.user-management-container .role-admin {
+  background: #ef4444;
+}
+
+.user-management-container .status-badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: white;
+}
+
+.user-management-container .status-active {
+  background: #4ade80;
+}
+
+.user-management-container .status-inactive {
+  background: #9ca3af;
+}
+
+/* Admin notice card tweak */
+.user-management-container .admin-notice {
+  margin-top: 25px;
+}

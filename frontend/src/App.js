@@ -30,13 +30,14 @@ import DepartmentStudents from './pages/DepartmentStudents';
 import DepartmentAdminGrades from './pages/DepartmentAdminGrades'
 import FacultyGrades from './pages/FacultyGrades';
 import Grades from './pages/Grades';
+import UserManagement from './pages/UserManagement';
 
 // Enhanced pages
 import NoticeBoard from './pages/NoticeBoard';
 import ChatInterface from './pages/ChatInterface';
 
 // Page placeholders
-const Home = () => <h2>Welcome to Digital Campus</h2>;
+// Placeholder removed (unused)
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -78,11 +79,11 @@ class ErrorBoundary extends React.Component {
 // Component to handle first login redirect
 function FirstLoginRedirect({ children }) {
   const { user, needsPasswordChange } = useAuth();
-  
+
   if (user && needsPasswordChange) {
     return <Navigate to="/change-password" replace />;
   }
-  
+
   return children;
 }
 
@@ -91,7 +92,7 @@ function Navigation({ user, logout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const getNavbarClass = () => {
     if (!user) return 'navbar';
     switch (user.role) {
@@ -106,18 +107,16 @@ function Navigation({ user, logout }) {
     }
   };
 
-  const isActive = (path) => location.pathname === path;
-
   // Role-based dashboard navigation
   const handleLogoClick = () => {
     if (!user) {
       navigate('/');
     }
-    else{
+    else {
       navigate('/dashboard');
 
     }
-    
+
     setIsMenuOpen(false);
   };
 
@@ -127,15 +126,15 @@ function Navigation({ user, logout }) {
         <span className="navbar-brand" style={{ cursor: 'pointer' }} onClick={handleLogoClick}>
           Digital Campus
         </span>
-        
-        <button 
+
+        <button
           className="navbar-toggle"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle navigation"
         >
           ☰
         </button>
-        
+
         <div className={`navbar-collapse${isMenuOpen ? ' show' : ''}`}>
           <ul className="navbar-nav">
             {user ? (
@@ -145,8 +144,8 @@ function Navigation({ user, logout }) {
                     {user.role === 'admin' ? (
                       <>
                         <li className="navbar-nav-right">
-                          <Link 
-                            to="/profile" 
+                          <Link
+                            to="/profile"
                             className="nav-link"
                             onClick={() => setIsMenuOpen(false)}
                           >
@@ -154,7 +153,7 @@ function Navigation({ user, logout }) {
                           </Link>
                         </li>
                         <li className="navbar-nav-right">
-                          <button 
+                          <button
                             onClick={() => {
                               logout();
                               setIsMenuOpen(false);
@@ -167,10 +166,10 @@ function Navigation({ user, logout }) {
                       </>
                     ) : user.role === 'departmentAdmin' ? (
                       <>
-                        
+
                         <li className="navbar-nav-right">
-                          <Link 
-                            to="/profile" 
+                          <Link
+                            to="/profile"
                             className="nav-link"
                             onClick={() => setIsMenuOpen(false)}
                           >
@@ -178,7 +177,7 @@ function Navigation({ user, logout }) {
                           </Link>
                         </li>
                         <li className="navbar-nav-right">
-                          <button 
+                          <button
                             onClick={() => {
                               logout();
                               setIsMenuOpen(false);
@@ -190,35 +189,35 @@ function Navigation({ user, logout }) {
                         </li>
                       </>
                     ) : (
-                     <>
-                     <li className="navbar-nav-right">
-                      <Link 
-                        to="/profile" 
-                        className="nav-link"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {user.name}
-                      </Link>
-                    </li>
-                    <li className="navbar-nav-right">
-                      <button 
-                        onClick={() => {
-                          logout();
-                          setIsMenuOpen(false);
-                        }}
-                        className="nav-link logout-btn"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                     </>
+                      <>
+                        <li className="navbar-nav-right">
+                          <Link
+                            to="/profile"
+                            className="nav-link"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {user.name}
+                          </Link>
+                        </li>
+                        <li className="navbar-nav-right">
+                          <button
+                            onClick={() => {
+                              logout();
+                              setIsMenuOpen(false);
+                            }}
+                            className="nav-link logout-btn"
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </>
                     )}
                   </>
                 ) : (
                   <>
                     <li className="navbar-nav-right">
-                      <Link 
-                        to="/profile" 
+                      <Link
+                        to="/profile"
                         className="nav-link"
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -226,7 +225,7 @@ function Navigation({ user, logout }) {
                       </Link>
                     </li>
                     <li className="navbar-nav-right">
-                      <button 
+                      <button
                         onClick={() => {
                           logout();
                           setIsMenuOpen(false);
@@ -242,15 +241,15 @@ function Navigation({ user, logout }) {
             ) : (
               <>
                 <li className="navbar-nav-right">
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="nav-link"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
                   </Link>
                 </li>
-              
+
               </>
             )}
           </ul>
@@ -275,7 +274,7 @@ function App() {
                 <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
                 <Route path="/register" element={<ProtectedRoute roles={['admin']}><PageWrapper><Register /></PageWrapper></ProtectedRoute>} />
                 <Route path="/change-password" element={<ProtectedRoute><PageWrapper><ChangePassword /></PageWrapper></ProtectedRoute>} />
-                
+
                 {/* Super Admin Routes (Admin role) */}
                 <Route path="/super-admin/dashboard" element={
                   <ProtectedRoute roles={['admin']}>
@@ -300,7 +299,7 @@ function App() {
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />
-                
+
                 {/* Regular Routes */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
@@ -337,7 +336,7 @@ function App() {
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />
-               
+
                 <Route path="/notice-board" element={
                   <ProtectedRoute>
                     <FirstLoginRedirect>
@@ -352,7 +351,7 @@ function App() {
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />
-               
+
                 <Route path="/chat" element={
                   <ProtectedRoute>
                     <FirstLoginRedirect>
@@ -375,7 +374,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                
+
                 {/* Department Admin Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><Dashboard /></ProtectedRoute>} />
                 <Route path="/department-admin/classes" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><DepartmentClasses /></ProtectedRoute>} />
@@ -383,10 +382,17 @@ function App() {
                 <Route path="/department-admin/subjects" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><DepartmentSubjects /></ProtectedRoute>} />
                 <Route path="/department-admin/students" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><DepartmentStudents /></ProtectedRoute>} />
                 <Route path="/department-admin/grades" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><DepartmentAdminGrades /></ProtectedRoute>} />
-                
+
                 { /* Faculty Routes*/}
                 <Route path="/faculty/grades" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyGrades /></ProtectedRoute>} />
 
+                <Route path="/user-management" element={
+                  <ProtectedRoute roles={['admin', 'departmentAdmin']}>
+                    <FirstLoginRedirect>
+                      <PageWrapper><UserManagement /></PageWrapper>
+                    </FirstLoginRedirect>
+                  </ProtectedRoute>
+                } />
 
               </Routes>
             </AnimatePresence>

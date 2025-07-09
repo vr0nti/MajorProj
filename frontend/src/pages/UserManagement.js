@@ -6,11 +6,6 @@ import api from '../api/axios';
 import '../styles/user-management.css';
 import { Card } from 'react-bootstrap';
 
-// Temporary passwords from environment variables
-const STUDENT_TEMP_PASSWORD = process.env.REACT_APP_STUDENT_TEMP_PASSWORD || 'Student@123';
-const FACULTY_TEMP_PASSWORD = process.env.REACT_APP_FACULTY_TEMP_PASSWORD || 'Faculty@123';
-const DEPARTMENT_ADMIN_TEMP_PASSWORD = process.env.REACT_APP_DEPARTMENT_ADMIN_TEMP_PASSWORD || 'Admin@123';
-
 export default function UserManagement() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -24,22 +19,24 @@ export default function UserManagement() {
   // Get user's department if they are a department admin
   const userDepartment = user?.department;
 
+  // Fetch data when component loads or when the authenticated user changes (e.g., on role switch)
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch data based on user role
       let departmentsRes, classesRes, usersRes;
-      
+
       if (user?.role === 'departmentAdmin') {
         // Department admin: only fetch their department's data
         [departmentsRes, classesRes, usersRes] = await Promise.all([
-          api.get(`/departments/${userDepartment}`),
-          api.get(`/classes/all?departmentId=${userDepartment}`),
+          api.get(`/department/${userDepartment}`),
+          api.get(`/class/all?departmentId=${userDepartment}`),
           api.get(`/user/department/${userDepartment}`)
         ]);
         // Convert single department to array for consistency
@@ -47,13 +44,13 @@ export default function UserManagement() {
       } else {
         // Super admin: fetch all data (view-only)
         [departmentsRes, classesRes, usersRes] = await Promise.all([
-          api.get('/departments/all'),
-          api.get('/classes/all'),
+          api.get('/department/all'),
+          api.get('/class/all'),
           api.get('/user/all')
         ]);
         setDepartments(departmentsRes.data);
       }
-      
+
       setClasses(classesRes.data);
       setAllUsers(usersRes.data);
     } catch (error) {
@@ -63,13 +60,10 @@ export default function UserManagement() {
     }
   };
 
-  const getClassesByDepartment = (departmentId) => {
-    return classes.filter(cls => cls.department === departmentId);
-  };
-
-  const filteredUsers = allUsers.filter(user => {
-    const matchesDepartment = !selectedDepartment || user.department === selectedDepartment;
-    const matchesRole = !filterRole || user.role === filterRole;
+  const filteredUsers = allUsers.filter(usr => {
+    const userDept = usr.department?._id || usr.department;
+    const matchesDepartment = !selectedDepartment || userDept === selectedDepartment;
+    const matchesRole = !filterRole || usr.role === filterRole;
     return matchesDepartment && matchesRole;
   });
 
@@ -83,23 +77,23 @@ export default function UserManagement() {
 
   return (
     <div className="user-management-container">
-      <button 
-        onClick={() => navigate('/dashboard')} 
+      <button
+        onClick={() => navigate('/dashboard')}
         className="back-btn"
       >
-        ← Back to Dashboard
+        Back to Dashboard
       </button>
-      
+
       <div className="user-management-header">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="header-content"
         >
           <h1>User Management</h1>
           <p>
-            {user?.role === 'admin' 
-              ? 'View all users across the system (View-only access)' 
+            {user?.role === 'admin'
+              ? 'View all users across the system (View-only access)'
               : 'Manage users in your department'
             }
           </p>
@@ -110,8 +104,8 @@ export default function UserManagement() {
       <div className="filters-section">
         <div className="filter-group">
           <label>Filter by Department:</label>
-          <select 
-            value={selectedDepartment || ''} 
+          <select
+            value={selectedDepartment || ''}
             onChange={(e) => setSelectedDepartment(e.target.value || null)}
           >
             <option value="">All Departments</option>
@@ -122,11 +116,11 @@ export default function UserManagement() {
             ))}
           </select>
         </div>
-        
+
         <div className="filter-group">
           <label>Filter by Role:</label>
-          <select 
-            value={filterRole} 
+          <select
+            value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
           >
             <option value="">All Roles</option>
@@ -140,21 +134,40 @@ export default function UserManagement() {
 
       {/* Statistics */}
       <div className="stats-section">
-        <div className="stat-card">
-          <h3>{filteredUsers.length}</h3>
-          <p>Total Users</p>
+        <div className="stat-card total">
+          <div className="stat-icon">👥</div>
+          <div className="stat-content">
+            <h3>{filteredUsers.length}</h3>
+            <p>Total Users</p>
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>{filteredUsers.filter(u => u.role === 'student').length}</h3>
-          <p>Students</p>
+        <div className="stat-card student">
+          <div className="stat-icon">🎓</div>
+          <div className="stat-content">
+            <h3>{filteredUsers.filter(u => u.role === 'student').length}</h3>
+            <p>Students</p>
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>{filteredUsers.filter(u => u.role === 'faculty').length}</h3>
-          <p>Faculty</p>
+        <div className="stat-card faculty">
+          <div className="stat-icon">👨‍🏫</div>
+          <div className="stat-content">
+            <h3>{filteredUsers.filter(u => u.role === 'faculty').length}</h3>
+            <p>Faculty</p>
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>{filteredUsers.filter(u => u.role === 'departmentAdmin').length}</h3>
-          <p>Department Admins</p>
+        <div className="stat-card dept-admin">
+          <div className="stat-icon">🧑‍💼</div>
+          <div className="stat-content">
+            <h3>{filteredUsers.filter(u => u.role === 'departmentAdmin').length}</h3>
+            <p>Department Admins</p>
+          </div>
+        </div>
+        <div className="stat-card admin">
+          <div className="stat-icon">🛡️</div>
+          <div className="stat-content">
+            <h3>{filteredUsers.filter(u => u.role === 'admin').length}</h3>
+            <p>Admins</p>
+          </div>
         </div>
       </div>
 
@@ -173,20 +186,20 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map(user => (
-              <tr key={user._id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
+            {filteredUsers.map((usr) => (
+              <tr key={usr._id}>
+                <td>{usr.name}</td>
+                <td>{usr.email}</td>
                 <td>
-                  <span className={`role-badge role-${user.role}`}>
-                    {user.role}
+                  <span className={`role-badge role-${usr.role}`}>
+                    {usr.role}
                   </span>
                 </td>
-                <td>{user.department?.name || 'N/A'}</td>
-                <td>{user.class?.name || 'N/A'}</td>
+                <td>{usr.department?.name || 'N/A'}</td>
+                <td>{usr.class?.name || 'N/A'}</td>
                 <td>
-                  <span className={`status-badge status-${user.status || 'active'}`}>
-                    {user.status || 'active'}
+                  <span className={`status-badge status-${usr.status || 'active'}`}>
+                    {usr.status || 'active'}
                   </span>
                 </td>
                 {user?.role === 'departmentAdmin' && (
@@ -201,7 +214,7 @@ export default function UserManagement() {
             ))}
           </tbody>
         </table>
-        
+
         {filteredUsers.length === 0 && (
           <div className="no-data">
             <p>No users found matching your criteria</p>
@@ -216,7 +229,7 @@ export default function UserManagement() {
             <Card.Body>
               <h5>View-Only Access</h5>
               <p>
-                As a Super Admin, you have view-only access to all user data. 
+                As a Super Admin, you have view-only access to all user data.
                 Department admins are responsible for creating and managing users within their departments.
               </p>
             </Card.Body>

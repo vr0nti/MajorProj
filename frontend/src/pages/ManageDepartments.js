@@ -96,7 +96,7 @@ export default function ManageDepartments() {
 
   const handleDeleteDepartment = async () => {
     try {
-      await api.delete(`/departments/${selectedDepartment._id}`);
+      await api.delete(`/department/${selectedDepartment._id}`);
       handleSuccess('Department deleted successfully!');
       setShowDeleteModal(false);
       setSelectedDepartment(null);
@@ -292,8 +292,8 @@ export default function ManageDepartments() {
                       </span>
                     </td>
                     <td>
-                      <span className="manage-departments-status active">
-                        {department.classes?.length || 0} classes
+                      <span className={`manage-departments-status ${department.classes?.length > 0 ? 'active' : 'inactive'}`}>
+                        {department.classes?.length || 0} {department.classes?.length === 1 ? 'class' : 'classes'}
                       </span>
                     </td>
                     <td>
