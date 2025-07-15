@@ -109,7 +109,12 @@ export default function Classes() {
   const handleEditClass = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/class/${selectedClass._id}`, {
+      // Use department admin route if user is department admin
+      const endpoint = user?.role === 'departmentAdmin' 
+        ? `/department-admin/classes/${selectedClass._id}`
+        : `/class/${selectedClass._id}`;
+      
+      await api.put(endpoint, {
         ...formData,
         subjects: subjectFacultyAssignments.filter(a => a.faculty)
       });

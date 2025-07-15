@@ -48,14 +48,11 @@ const DepartmentClasses = () => {
     }
   }, [showAddModal, formData.semester]);
 
-  // Reset assignments if semester changes
+  // Reset assignments when semester or academic year changes or when subject list arrives
   useEffect(() => {
     setSubjectFacultyAssignments([]);
-    console.log(formData.semester, formData.academicYear);
     setSemesterSubjects(allSubjects.filter(s => s.semester === formData.semester));
-    console.log(allSubjects);
-    console.log(semesterSubjects);
-  }, [formData.semester, formData.academicYear]);
+  }, [formData.semester, formData.academicYear, allSubjects]);
 
   const fetchData = async () => {
     try {
@@ -70,7 +67,7 @@ const DepartmentClasses = () => {
       setClasses(classesRes.data);
       setFaculty(facultyRes.data);
       setSubjects(subjectsRes.data);
-      } catch (error) {
+    } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -79,10 +76,14 @@ const DepartmentClasses = () => {
 
   const fetchSubjectsAndFaculty = async () => {
     try {
-      
+
       setAllSubjects(subjects);
       setAllFaculty(faculty);
-      setSubjectFacultyAssignments(subjects.map(s => ({ subject: s._id, faculty: '' })));
+      setSubjectFacultyAssignments(
+        subjects
+          .filter(s => s.semester === formData.semester)
+          .map(s => ({ subject: s._id, faculty: '' }))
+      );
     } catch (err) {
       setAllSubjects([]);
       setAllFaculty([]);
@@ -93,15 +94,20 @@ const DepartmentClasses = () => {
   const handleAssignmentChange = (subjectId, facultyId) => {
     console.log(subjectId, facultyId);
     console.log(subjectFacultyAssignments);
-    setSubjectFacultyAssignments(prev => prev.map(a =>
-      a.subject === subjectId ? { ...a, faculty: facultyId } : a
-    ));
+    setSubjectFacultyAssignments(prev => {
+      const idx = prev.findIndex(a => a.subject === subjectId);
+      if (idx !== -1) {
+        return prev.map(a => a.subject === subjectId ? { ...a, faculty: facultyId } : a);
+      }
+      // not found, add new entry
+      return [...prev, { subject: subjectId, faculty: facultyId }];
+    });
   };
 
   const handleAddClass = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/class/add', {
+      await api.post('/department-admin/classes', {
         ...formData,
         departmentId: user.department,
         subjects: subjectFacultyAssignments.filter(a => a.faculty)
@@ -136,26 +142,26 @@ const DepartmentClasses = () => {
     // Prefill assignments for the class's subjects
 
     setSemesterSubjects(allSubjects.filter(s => s.semester === classData.semester));
-    if(classData.subjects && classData.subjects.length > 0){
-    setSubjectFacultyAssignments(
-      (classData.subjects || []).map(s => ({
-        subject: s.subject._id || s.subject,
-        faculty: s.faculty?._id || s.faculty || ''
-      }))
-    );
-  }
-  else{
-    setAllFaculty(faculty);
-    setAllSubjects(subjects);
-    setSubjectFacultyAssignments(subjects.filter(s => s.semester === classData.semester).map(s => ({ subject: s._id, faculty: '' })));
-  }
+    if (classData.subjects && classData.subjects.length > 0) {
+      setSubjectFacultyAssignments(
+        (classData.subjects || []).map(s => ({
+          subject: s.subject._id || s.subject,
+          faculty: s.faculty?._id || s.faculty || ''
+        }))
+      );
+    }
+    else {
+      setAllFaculty(faculty);
+      setAllSubjects(subjects);
+      setSubjectFacultyAssignments(subjects.filter(s => s.semester === classData.semester).map(s => ({ subject: s._id, faculty: '' })));
+    }
     setShowEditModal(true);
   };
 
   const handleEditClass = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/class/${selectedClass._id}`, {
+      await api.put(`/department-admin/classes/${selectedClass._id}`, {
         ...formData,
         subjects: subjectFacultyAssignments // allow empty faculty
       });
@@ -180,13 +186,13 @@ const DepartmentClasses = () => {
   useEffect(() => {
     if (showEditModal) {
       setSemesterSubjects(allSubjects.filter(s => s.semester === formData.semester));
-      
+
     }
   }, [formData.semester, formData.academicYear, showEditModal, allSubjects]);
 
   const handleDeleteClass = async () => {
     try {
-      await api.delete(`/class/${selectedClass._id}`);
+      await api.delete(`/department-admin/classes/${selectedClass._id}`);
       setShowDeleteModal(false);
       setSelectedClass(null);
       fetchData();
@@ -212,11 +218,11 @@ const DepartmentClasses = () => {
 
   const filteredClasses = classes.filter(cls => {
     const matchesSearch = cls.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (cls.classTeacher?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+      cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cls.classTeacher?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesYear = !filterYear || cls.academicYear === filterYear;
     const matchesSemester = !filterSemester || cls.semester === filterSemester;
-    
+
     return matchesSearch && matchesYear && matchesSemester;
   });
 
@@ -250,7 +256,7 @@ const DepartmentClasses = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <div className="filters">
             <select
               value={filterYear}
@@ -262,7 +268,7 @@ const DepartmentClasses = () => {
               <option value="2023-24">2023-24</option>
               <option value="2022-23">2022-23</option>
             </select>
-            
+
             <select
               value={filterSemester}
               onChange={(e) => setFilterSemester(e.target.value)}
@@ -279,17 +285,19 @@ const DepartmentClasses = () => {
             </select>
           </div>
         </div>
-        
+
         <button
           className="add-btn"
-          onClick={() => {setShowAddModal(true); setFormData({
-            name: '',
-            classTeacherId: '',
-            academicYear: '',
-            semester: '',
-            capacity: 60,
-            status: 'active'
-          });}}
+          onClick={() => {
+            setShowAddModal(true); setFormData({
+              name: '',
+              classTeacherId: '',
+              academicYear: '',
+              semester: '',
+              capacity: 60,
+              status: 'active'
+            });
+          }}
         >
           + Add New Class
         </button>
@@ -375,7 +383,7 @@ const DepartmentClasses = () => {
             ))}
           </tbody>
         </table>
-        
+
         {filteredClasses.length === 0 && (
           <div className="no-data">
             <p>No classes found matching your criteria</p>
@@ -398,7 +406,7 @@ const DepartmentClasses = () => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., A, B, C"
                     required
                   />
@@ -491,7 +499,7 @@ const DepartmentClasses = () => {
                           <select
                             value={subjectFacultyAssignments.find(a => a.subject === subject._id)?.faculty || ''}
                             onChange={e => handleAssignmentChange(subject._id, e.target.value)}
-                            
+
                           >
                             <option value="">Select Faculty</option>
                             {allFaculty.filter(fac => subject.faculty?.includes(fac._id)).map(fac => (
@@ -517,7 +525,7 @@ const DepartmentClasses = () => {
         </div>
       )}
 
-      {/* Edit Class Modal */}  
+      {/* Edit Class Modal */}
       {showEditModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -532,7 +540,7 @@ const DepartmentClasses = () => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., A, B, C"
                     required
                   />
@@ -622,11 +630,10 @@ const DepartmentClasses = () => {
                         </div>
                         <div className="faculty-select-row">
                           <label>Faculty</label>
-                          {console.log(subjectFacultyAssignments)}
                           <select
                             value={subjectFacultyAssignments.find(a => a.subject === subject._id)?.faculty || ''}
                             onChange={e => handleAssignmentChange(subject._id, e.target.value)}
-                            
+
                           >
                             <option value="">Select Faculty</option>
                             {allFaculty.filter(fac => subject.faculty?.includes(fac._id)).map(fac => (

@@ -43,11 +43,15 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
-    const token = jwt.sign(
-      { user },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const tokenPayload = {
+      userId: user._id,
+      role: user.role,
+      department: user.department?._id || user.department,
+    };
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     res.json({
       token,
       user: {
@@ -60,7 +64,7 @@ exports.login = async (req, res) => {
         departmentCode: user.department?.code,
         class: user.class?._id || user.class,
         className: user.class?.fullName || user.class?.name,
-        status: user.status
+        status: user.status,
       },
     });
   } catch (err) {
