@@ -29,6 +29,19 @@ exports.addTimetable = async (req, res) => {
     if (existingTimetable) {
       return res.status(400).json({ message: 'Timetable already exists for this class' });
     }
+    
+    // Sanitize schedule: convert empty string subject/faculty to null (e.g., breaks)
+    if (Array.isArray(schedule)) {
+      schedule.forEach(dayObj => {
+        if (Array.isArray(dayObj.periods)) {
+          dayObj.periods.forEach(period => {
+            if (period.subject === "") period.subject = null;
+            if (period.faculty === "") period.faculty = null;
+          });
+        }
+      });
+    }
+
     console.log("0");
     const timetable = new Timetable({ 
       class: classId, 

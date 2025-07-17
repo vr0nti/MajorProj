@@ -89,7 +89,9 @@ const getClasses = async (req, res) => {
 
 const createClass = async (req, res) => {
   try {
-    const { name, classTeacherId, academicYear, semester, capacity } = req.body;
+    // "subjects" will arrive as an array like [{ subject: <subjectId>, faculty: <facultyId> }]
+    // We accept it and store only valid pairs (faculty may be optional)
+    const { name, classTeacherId, academicYear, semester, capacity, subjects } = req.body;
     const departmentId = req.user.department;
 
     // Check if class with same name already exists in this department
@@ -114,6 +116,11 @@ const createClass = async (req, res) => {
     // Create full name (e.g., "CSE-A")
     const fullName = `${department.code}-${name}`;
     
+    // Filter out placeholders or empty selections the frontend might send
+    const cleanedSubjects = Array.isArray(subjects)
+      ? subjects.filter(s => s && s.subject && s.faculty && s.faculty !== '-' && s.faculty !== '')
+      : [];
+
     const newClass = new Class({
       name,
       fullName,
@@ -121,7 +128,8 @@ const createClass = async (req, res) => {
       academicYear,
       semester,
       capacity: capacity || 60,
-      status: 'active'
+      status: 'active',
+      subjects: cleanedSubjects
     });
 
     // Add class teacher if provided
@@ -141,6 +149,14 @@ const createClass = async (req, res) => {
 
     await newClass.save();
 
+    // Add this class reference inside each related Subject document (handy for look-ups)
+    if (cleanedSubjects.length) {
+      await Subject.updateMany(
+        { _id: { $in: cleanedSubjects.map(s => s.subject) } },
+        { $addToSet: { classes: newClass._id } }
+      );
+    }
+
     // Update Department model - add class to department
     await Department.findByIdAndUpdate(departmentId, {
       $push: { classes: newClass._id }
@@ -156,7 +172,7 @@ const createClass = async (req, res) => {
 const updateClass = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, classTeacherId, academicYear, semester, capacity, status } = req.body;
+    const { name, classTeacherId, academicYear, semester, capacity, status, subjects } = req.body;
     const departmentId = req.user.department;
 
     const classToUpdate = await Class.findOne({ _id: id, department: departmentId });
@@ -220,6 +236,18 @@ const updateClass = async (req, res) => {
     classToUpdate.semester = semester;
     classToUpdate.capacity = capacity || classToUpdate.capacity;
     classToUpdate.status = status || classToUpdate.status;
+
+    // Handle subject-faculty updates (replace with new clean array)
+    if (Array.isArray(subjects)) {
+      const cleanedSubjects = subjects.filter(s => s && s.subject && s.faculty && s.faculty !== '-' && s.faculty !== '');
+      classToUpdate.subjects = cleanedSubjects;
+
+      // Ensure Subject documents include this class reference
+      await Subject.updateMany(
+        { _id: { $in: cleanedSubjects.map(s => s.subject) } },
+        { $addToSet: { classes: classToUpdate._id } }
+      );
+    }
 
     await classToUpdate.save();
 

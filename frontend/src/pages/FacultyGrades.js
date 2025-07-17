@@ -80,8 +80,14 @@ const FacultyGrades = () => {
         setAcademicYear(cls.academicYear);
         setFilteredSubjects(
           cls.subjects
-            .filter(s => (s.faculty) === user.id)
-            .map(s => s.subject)
+            .filter(s => {
+              const facId = (s.faculty?._id || s.faculty || '').toString();
+              return facId === user.id;
+            })
+            .map(s => {
+              const subj = s.subject;
+              return typeof subj === 'object' ? subj._id : subj;
+            })
         );
         console.log(filteredSubjects);
       } else {

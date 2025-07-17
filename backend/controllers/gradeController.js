@@ -11,6 +11,8 @@ exports.addGrade = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Only faculty can add grades.' });
     }
 
+    const facultyId = req.user.userId || req.user._id;
+
     const { 
       studentId, 
       subjectId, 
@@ -31,7 +33,7 @@ exports.addGrade = async (req, res) => {
 
     // Verify subject exists and faculty is assigned to it
     const subject = await Subject.findById(subjectId);
-    if (!subject || !subject.faculty.includes(req.user._id)) {
+    if (!subject || !subject.faculty.map(id=>id.toString()).includes(facultyId.toString())) {
       return res.status(403).json({ message: 'Subject not found or you are not assigned to this subject' });
     }
 
@@ -58,7 +60,7 @@ exports.addGrade = async (req, res) => {
       student: studentId,
       subject: subjectId,
       class: classId,
-      faculty: req.user._id,
+      faculty: facultyId,
       semester,
       academicYear,
       gradeType,
@@ -145,9 +147,11 @@ exports.getClassGrades = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Only faculty can view class grades.' });
     }
 
+    const facultyId = req.user.userId || req.user._id;
+
     const { classId, subjectId, semester, academicYear } = req.query;
 
-    let query = { faculty: req.user._id };
+    let query = { faculty: facultyId };
 
     if (classId) query.class = classId;
     if (subjectId) query.subject = subjectId;
@@ -196,9 +200,10 @@ exports.deleteGrade = async (req, res) => {
 // Get grade statistics
 exports.getGradeStatistics = async (req, res) => {
   try {
+    const facultyId = req.user.userId || req.user._id;
     const { classId, subjectId, semester, academicYear } = req.query;
 
-    let query = { faculty: req.user._id };
+    let query = { faculty: facultyId };
 
     if (classId) query.class = classId;
     if (subjectId) query.subject = subjectId;
@@ -236,6 +241,8 @@ exports.addMidExamMarks = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Only faculty can add mid exam marks.' });
     }
 
+    const facultyId = req.user.userId || req.user._id;
+
     const { 
       studentId, 
       subjectId, 
@@ -264,7 +271,7 @@ exports.addMidExamMarks = async (req, res) => {
 
     // Verify subject exists and faculty is assigned to it
     const subject = await Subject.findById(subjectId);
-    if (!subject || !subject.faculty.includes(req.user._id)) {
+    if (!subject || !subject.faculty.map(id=>id.toString()).includes(facultyId.toString())) {
       return res.status(403).json({ message: 'Subject not found or you are not assigned to this subject' });
     }
 
@@ -287,7 +294,7 @@ exports.addMidExamMarks = async (req, res) => {
         student: studentId,
         subject: subjectId,
         class: classId,
-        faculty: req.user._id,
+        faculty: facultyId,
         semester,
         academicYear
       });
@@ -495,6 +502,8 @@ exports.getFacultyGrades = async (req, res) => {
     if (req.user.role !== 'faculty' && req.user.role !== 'departmentAdmin') {
       return res.status(403).json({ message: 'Access denied. Only faculty can view faculty grades.' });
     }
+
+    const facultyId = req.user.userId || req.user._id;
 
     const { classId, subjectId, semester, academicYear } = req.query;
 

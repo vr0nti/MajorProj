@@ -416,17 +416,28 @@ exports.getFacultyClasses = async (req, res) => {
     if (req.user.role !== 'faculty') {
       return res.status(403).json({ message: 'Access denied' });
     }
-    // Find all timetables where this faculty is assigned
-    const teachingClasses = await Class.find({ 'subjects.faculty': req.user._id });
-    // Extract unique classes
+    const facultyId = req.user.userId || req.user._id;
+    // Classes where the faculty is class teacher
+    const asClassTeacher = await Class.find({ classTeacher: facultyId });
+    // Classes where the faculty is assigned to teach at least one subject
+    const asSubjectTeacher = await Class.find({ 'subjects.faculty': facultyId });
+
+    // Merge and remove duplicates
     const classMap = {};
-    teachingClasses.forEach(cls => {
-      if (cls._id) {
+    [...asClassTeacher, ...asSubjectTeacher].forEach(cls => {
+      if (cls && cls._id) {
         classMap[cls._id] = cls;
       }
     });
+
     const classes = Object.values(classMap);
-    res.json(classes);
+    // Populate minimal info the front-end expects
+    const populated = await Class.populate(classes, [
+      { path: 'department', select: 'name code' },
+      { path: 'subjects.subject', select: 'name code semester' },
+    ]);
+
+    res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

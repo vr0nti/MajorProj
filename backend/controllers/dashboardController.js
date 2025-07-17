@@ -23,10 +23,10 @@ const getDashboardStats = async (req, res) => {
         stats = await getDepartmentAdminStats(user.department);
         break;
       case 'faculty':
-        stats = await getFacultyStats(user._id);
+        stats = await getFacultyStats(user.userId || user._id);
         break;
       case 'student':
-        stats = await getStudentStats(user._id);
+        stats = await getStudentStats(user.userId || user._id);
         break;
       default:
         stats = {};
@@ -137,20 +137,23 @@ const getDepartmentAdminStats = async (departmentId) => {
 
 // Helper functions for faculty statistics
 const getFacultyStats = async (facultyId) => {
+  // Determine all classes this faculty is involved in (class teacher OR subject teacher)
+  const classTeacherIds = await Class.find({ classTeacher: facultyId }).distinct('_id');
+  const subjectTeacherIds = await Class.find({ 'subjects.faculty': facultyId }).distinct('_id');
+  const allClassIds = Array.from(new Set([...classTeacherIds, ...subjectTeacherIds]));
+
   const [
-    myClasses,
-    myStudents,
     attendanceRate,
-    pendingGrades
+    pendingGrades,
+    myStudents
   ] = await Promise.all([
-    Class.countDocuments({ classTeacher: facultyId }),
-    User.countDocuments({ class: { $in: await Class.find({ classTeacher: facultyId }).distinct('_id') }, role: 'student' }),
     calculateAttendanceRate(facultyId),
-    Grade.countDocuments({ faculty: facultyId, isSubmitted: false })
+    Grade.countDocuments({ faculty: facultyId, isSubmitted: false }),
+    User.countDocuments({ class: { $in: allClassIds }, role: 'student' })
   ]);
 
   return {
-    myClasses,
+    myClasses: allClassIds.length,
     myStudents,
     attendanceRate,
     pendingGrades,
@@ -285,17 +288,17 @@ const getStudentActivities = async (studentId) => {
   
   // Get attendance records
   const recentAttendance = await Attendance.find({ 
-    'records.student': studentId 
+    'attendance.student': studentId 
   })
     .populate('class', 'name')
     .sort({ date: -1 })
     .limit(5);
   
   recentAttendance.forEach(attendance => {
-    const record = attendance.records.find(r => r.student.toString() === studentId.toString());
+    const record = (attendance.attendance || []).find(r => r.student.toString() === studentId.toString());
     activities.push({
       type: 'attendance',
-      description: `Attendance marked as ${record.status} for ${attendance.class.name}`,
+      description: `Attendance marked as ${record?.status || '-' } for ${attendance.class.name}`,
       createdAt: attendance.createdAt
     });
   });
@@ -354,31 +357,36 @@ const getDepartmentEvents = async (departmentId) => {
 
 // Helper functions for calculations
 const calculateAttendanceRate = async (facultyId) => {
-  const classes = await Class.find({ classTeacher: facultyId });
-  if (classes.length === 0) return 0;
+  // Consider classes where faculty is class teacher or teaches at least one subject
+  const classTeacherIds = await Class.find({ classTeacher: facultyId }).distinct('_id');
+  const subjectTeacherIds = await Class.find({ 'subjects.faculty': facultyId }).distinct('_id');
+  const classIds = Array.from(new Set([...classTeacherIds, ...subjectTeacherIds]));
 
-  const totalStudents = await User.countDocuments({ 
-    class: { $in: classes.map(c => c._id) },
-    role: 'student'
-  });
-
-  if (totalStudents === 0) return 0;
+  if (classIds.length === 0) return 0;
 
   const today = new Date();
   const attendanceRecords = await Attendance.find({
-    faculty: facultyId,
+    class: { $in: classIds },
     date: {
       $gte: new Date(today.getFullYear(), today.getMonth(), 1),
       $lte: today
     }
   });
 
-  let totalAttendance = 0;
-  attendanceRecords.forEach(record => {
-    totalAttendance += record.records.filter(r => r.status === 'present').length;
+  if (attendanceRecords.length === 0) return 0;
+
+  let presentTotal = 0;
+  let studentTotal = 0;
+
+  attendanceRecords.forEach(rec => {
+    const arr = rec.attendance || [];
+    presentTotal += arr.filter(a => a.status === 'present').length;
+    studentTotal += arr.length;
   });
 
-  return Math.round((totalAttendance / (totalStudents * attendanceRecords.length)) * 100) || 0;
+  if (studentTotal === 0) return 0;
+
+  return Math.round((presentTotal / studentTotal) * 100);
 };
 
 const calculateStudentAttendance = async (studentId) => {
@@ -398,7 +406,7 @@ const calculateStudentAttendance = async (studentId) => {
 
   let presentCount = 0;
   attendanceRecords.forEach(record => {
-    const studentRecord = record.records?.find(r => r.student.toString() === studentId);
+    const studentRecord = (record.attendance || []).find(r => r.student.toString() === studentId.toString());
     if (studentRecord && studentRecord.status === 'present') {
       presentCount++;
     }
