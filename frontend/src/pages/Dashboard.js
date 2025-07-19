@@ -75,6 +75,7 @@ const Dashboard = () => {
           { title: 'View Timetable', path: '/timetable', icon: '📅' },
           { title: 'View Notices', path: '/notice-board', icon: '📢' },
           { title: 'Submit Complaint', path: '/complaints', icon: '📝' },
+          { title: 'AI Course Finder', path: '/course-recommendations', icon: '🎓' },
         ];
       default:
         return [];

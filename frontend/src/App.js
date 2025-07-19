@@ -35,6 +35,7 @@ import UserManagement from './pages/UserManagement';
 // Enhanced pages
 import NoticeBoard from './pages/NoticeBoard';
 import ChatInterface from './pages/ChatInterface';
+import CourseRecommendationsPage from './pages/CourseRecommendations';
 
 // Page placeholders
 // Placeholder removed (unused)
@@ -374,6 +375,13 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/course-recommendations" element={
+                  <ProtectedRoute>
+                    <FirstLoginRedirect>
+                      <PageWrapper><CourseRecommendationsPage /></PageWrapper>
+                    </FirstLoginRedirect>
+                  </ProtectedRoute>
+                } />
 
                 {/* Department Admin Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['departmentAdmin']}><Dashboard /></ProtectedRoute>} />
