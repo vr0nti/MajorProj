@@ -36,6 +36,7 @@ import UserManagement from './pages/UserManagement';
 import NoticeBoard from './pages/NoticeBoard';
 import ChatInterface from './pages/ChatInterface';
 import CourseRecommendationsPage from './pages/CourseRecommendations';
+import AiChatBot from './pages/AiChatBot';
 
 // Page placeholders
 // Placeholder removed (unused)
@@ -379,6 +380,13 @@ function App() {
                   <ProtectedRoute>
                     <FirstLoginRedirect>
                       <PageWrapper><CourseRecommendationsPage /></PageWrapper>
+                    </FirstLoginRedirect>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ai-chat" element={
+                  <ProtectedRoute>
+                    <FirstLoginRedirect>
+                      <PageWrapper><AiChatBot /></PageWrapper>
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />

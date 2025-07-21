@@ -15,6 +15,7 @@ const gradeRouter = require('./grade');
 const chatRouter = require('./chat');
 const dashboardRouter = require('./dashboard');
 const courseAiRouter = require('./courseAi');
+const academicChatRouter = require('./academicChat');
 // TODO: Add other routers (class, department, etc.)
 router.use('/course-ai', courseAiRouter);
 router.use('/auth', authRouter);
@@ -30,5 +31,6 @@ router.use('/department-admin', departmentAdminRouter);
 router.use('/grade', gradeRouter);
 router.use('/chat', chatRouter);
 router.use('/dashboard', dashboardRouter);
+router.use('/academic-chat', academicChatRouter);
 
 module.exports = router; 
