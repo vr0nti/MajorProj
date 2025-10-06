@@ -1,0 +1,224 @@
+/* Print-friendly styles for timetable pages */
+
+@media print {
+  /* Hide navigation and unnecessary elements */
+  nav,
+  .navbar,
+  .back-btn,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset body margins for better print layout */
+  body {
+    margin: 0;
+    padding: 20px;
+    font-size: 12pt;
+    color: #000;
+    background: white;
+  }
+
+  /* Optimize page layout */
+  .timetable-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Header styles */
+  .timetable-header {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .timetable-title {
+    font-size: 20pt;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .timetable-subtitle {
+    font-size: 12pt;
+    color: #666;
+  }
+
+  /* Table styles */
+  .timetable-table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: avoid;
+  }
+
+  .timetable-table th,
+  .timetable-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+    font-size: 10pt;
+  }
+
+  .timetable-table th {
+    background-color: #e0e0e0 !important;
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Grid styles for alternative layout */
+  .timetable-grid {
+    display: grid;
+    grid-template-columns: 100px repeat(6, 1fr);
+    gap: 0;
+    page-break-inside: avoid;
+  }
+
+  .timetable-header-cell,
+  .timetable-time-cell,
+  .timetable-slot {
+    border: 1px solid #000;
+    padding: 8px;
+    font-size: 10pt;
+  }
+
+  .timetable-header-cell {
+    background-color: #e0e0e0 !important;
+    font-weight: bold;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timetable-time-cell {
+    background-color: #f5f5f5 !important;
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timetable-slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+  }
+
+  .timetable-slot.has-class {
+    background-color: #e8f4f8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timetable-slot.empty {
+    background-color: #fafafa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Period details */
+  .timetable-class-name {
+    font-weight: bold;
+    font-size: 11pt;
+    margin-bottom: 4px;
+  }
+
+  .timetable-class-teacher,
+  .timetable-class-room,
+  .timetable-class-class,
+  .timetable-class-meta {
+    font-size: 9pt;
+    color: #333;
+    margin-top: 2px;
+  }
+
+  /* Faculty timetable specific styles */
+  .faculty-timetable-card .my-period {
+    background-color: #d4edda !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .faculty-timetable-card .not-my-period {
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Card styles */
+  .timetable-card {
+    border: 2px solid #000;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+
+  .timetable-card-header {
+    background-color: #e0e0e0 !important;
+    border-bottom: 2px solid #000;
+    padding: 15px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timetable-card-title {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .timetable-card-body {
+    padding: 15px;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-after: always;
+  }
+
+  /* Avoid breaking certain elements */
+  .period-details,
+  .timetable-slot,
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Footer for print */
+  @page {
+    margin: 1cm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+  }
+
+  /* Add metadata */
+  .print-metadata {
+    display: block !important;
+    text-align: center;
+    font-size: 10pt;
+    color: #666;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+  }
+}
+
+/* On-screen print preview hint */
+.print-hint {
+  display: none;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 10px 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+}
+
+@media screen {
+  .print-metadata {
+    display: none;
+  }
+}

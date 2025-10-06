@@ -37,6 +37,7 @@ import NoticeBoard from './pages/NoticeBoard';
 import ChatInterface from './pages/ChatInterface';
 import CourseRecommendationsPage from './pages/CourseRecommendations';
 import AiChatBot from './pages/AiChatBot';
+import TimetableAnalytics from './pages/TimetableAnalytics';
 
 // Page placeholders
 // Placeholder removed (unused)
@@ -350,6 +351,13 @@ function App() {
                   <ProtectedRoute>
                     <FirstLoginRedirect>
                       <PageWrapper><Timetable /></PageWrapper>
+                    </FirstLoginRedirect>
+                  </ProtectedRoute>
+                } />
+                <Route path="/timetable-analytics" element={
+                  <ProtectedRoute roles={['admin', 'departmentAdmin']}>
+                    <FirstLoginRedirect>
+                      <PageWrapper><TimetableAnalytics /></PageWrapper>
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />

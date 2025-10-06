@@ -44,6 +44,17 @@ const CourseRecommendations = () => {
                 )}
               </div>
               <p className="course-ai-card-desc">{rec.description}</p>
+              <div className="course-ai-card-footer">
+                {rec.instructor && (
+                  <span className="course-instructor">👨‍🏫 {rec.instructor}</span>
+                )}
+                {rec.rating && (
+                  <span className="course-rating">⭐ {rec.rating}</span>
+                )}
+                {rec.duration && (
+                  <span className="course-duration">⏱️ {rec.duration}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>

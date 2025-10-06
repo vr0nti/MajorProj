@@ -1,8 +1,10 @@
 import React from 'react';
 import '../styles/timetable.css';
+import '../styles/timetable-print.css';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import useAuth from '../hooks/useAuth';
+import { exportToExcel, exportFacultyTimetableToExcel } from '../utils/timetableExport';
 
 export default function Timetable() {
   const navigate = useNavigate();
@@ -28,12 +30,32 @@ export default function Timetable() {
   if (user.role === 'student') {
     return (
       <div className="timetable-container">
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          className="back-btn"
-        >
-          Back to Dashboard
-        </button>
+        <div className="no-print" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="back-btn"
+          >
+            Back to Dashboard
+          </button>
+          {timetable && (
+            <>
+              <button 
+                onClick={() => window.print()} 
+                className="back-btn"
+                style={{ background: '#28a745' }}
+              >
+                🖨️ Print
+              </button>
+              <button 
+                onClick={() => exportToExcel(timetable, `timetable_${user.name.replace(/\s/g, '_')}`)} 
+                className="back-btn"
+                style={{ background: '#17a2b8' }}
+              >
+                📊 Export Excel
+              </button>
+            </>
+          )}
+        </div>
         
         <div className="timetable-header">
           <h1 className="timetable-title">My Timetable</h1>
@@ -74,6 +96,11 @@ export default function Timetable() {
             </div>
           </div>
         ) : <div>No timetable found.</div>}
+        
+        {/* Print metadata */}
+        <div className="print-metadata">
+          Generated on: {new Date().toLocaleDateString()} | Student Timetable - {user.name}
+        </div>
       </div>
     );
   } else if (user.role === 'faculty') {
@@ -148,12 +175,32 @@ export default function Timetable() {
     });
     return (
       <div className="timetable-container">
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          className="back-btn"
-        >
-          Back to Dashboard
-        </button>
+        <div className="no-print" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="back-btn"
+          >
+            Back to Dashboard
+          </button>
+          {timeSlots.length > 0 && (
+            <>
+              <button 
+                onClick={() => window.print()} 
+                className="back-btn"
+                style={{ background: '#28a745' }}
+              >
+                🖨️ Print
+              </button>
+              <button 
+                onClick={() => exportFacultyTimetableToExcel(timetable, user.name, `faculty_timetable_${user.name.replace(/\s/g, '_')}`)} 
+                className="back-btn"
+                style={{ background: '#17a2b8' }}
+              >
+                📊 Export Excel
+              </button>
+            </>
+          )}
+        </div>
         <div className="timetable-header">
           <h1 className="timetable-title">My Teaching Timetable</h1>
           <p className="timetable-subtitle">All your assigned periods across all classes are shown below.</p>
@@ -201,6 +248,11 @@ export default function Timetable() {
             </div>
           </div>
         ) : <div>No assigned periods found.</div>}
+        
+        {/* Print metadata */}
+        <div className="print-metadata">
+          Generated on: {new Date().toLocaleDateString()} | Faculty Timetable - {user.name}
+        </div>
       </div>
     );
   }

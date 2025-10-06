@@ -15,14 +15,38 @@ const recommendCourses = async (req, res) => {
   }
 
   try {
-    const prompt = `You are an academic advisor. The student is in the ${department} department and has interest in the following subjects: ${subjects}. Return EXACTLY 5 courses that would be suitable for online learning. Mix both comprehensive courses and specific topic courses. If you cannot find 5 courses matching the subjects exactly, add additional courses that are generally relevant to the ${department} department. For each course provide: 1) course (name) - be specific and include keywords like "Complete", "Full", "Comprehensive" where appropriate and 2) description. Do NOT provide any links. OUTPUT STRICTLY a JSON array`;
+    const prompt = `You are an expert academic advisor with deep knowledge of online courses. A student from ${department} department wants to learn about: ${subjects}.
 
-    // Define fallback model list
+Provide EXACTLY 5 real, popular online courses that actually exist. For each course, return:
+- "course": The exact course title as it appears on the platform
+- "description": A brief, accurate description (50-100 words)
+- "instructor": The actual instructor or institution name
+- "platform": The platform (Coursera, Udemy, edX, Khan Academy, etc.)
+- "rating": Course rating if known (e.g., "4.7/5")
+- "duration": Approximate course duration (e.g., "40 hours", "6 weeks")
+
+Focus on highly-rated, comprehensive courses that match the subjects. Include a mix of beginner and intermediate level courses.
+
+Return ONLY a JSON array, no other text. Example format:
+[
+  {
+    "course": "Machine Learning",
+    "description": "Stanford's famous ML course by Andrew Ng covering supervised and unsupervised learning",
+    "instructor": "Andrew Ng",
+    "platform": "Coursera",
+    "rating": "4.9/5",
+    "duration": "60 hours"
+  }
+]`;
+
+    // Define fallback model list with better free-tier models
     const models = [
-      'google/gemini-2.0-flash-exp:free',
-      'moonshotai/kimi-dev-72b:free',
-      'microsoft/mai-ds-r1:free',
-      'nvidia/llama-3.1-nemotron-ultra-253b-v1:free',
+      'google/gemini-2.0-flash-exp:free',  // Good for structured output
+      'qwen/qwen-2.5-72b-instruct:free',   // Excellent for instructions
+      'meta-llama/llama-3.2-3b-instruct:free', // Fast and reliable
+      'mistralai/mistral-small-3.1-24b:free',  // Good general purpose
+      'bytedance/yi-1.5-16k-chat:free',    // Good for detailed responses
+      'z-ai/glm-4-32b:free'                // Alternative option
     ];
 
     let aiMessage = '';
@@ -33,9 +57,15 @@ const recommendCourses = async (req, res) => {
           {
             model: mdl,
             messages: [
-              { role: 'system', content: 'You are a helpful assistant providing course recommendations.' },
+              { 
+                role: 'system', 
+                content: 'You are an expert educational consultant with comprehensive knowledge of online learning platforms including Coursera, Udemy, edX, Khan Academy, and others. You provide accurate, specific course recommendations based on real courses that exist on these platforms. Always return valid JSON arrays.' 
+              },
               { role: 'user', content: prompt }
-            ]
+            ],
+            temperature: 0.7,  // More consistent output
+            max_tokens: 2048,  // Enough for detailed responses
+            top_p: 0.9
           },
           {
             headers: {
@@ -49,10 +79,11 @@ const recommendCourses = async (req, res) => {
       } catch (err) {
         const providerCode = err.response?.data?.error?.code ?? err.response?.status;
         if (providerCode === 429) {
-          console.warn(`Model ${mdl} rate-limited, trying next model…`);
+          console.warn(`Model ${mdl} rate-limited, trying next model...`);
           continue; // fallback
         }
-        throw err; // other errors => bubble
+        console.error(`Error with model ${mdl}:`, err.response?.data || err.message);
+        continue; // Try next model instead of throwing
       }
     }
 
@@ -108,60 +139,46 @@ const recommendCourses = async (req, res) => {
         return overlap / Math.max(aw.length, bw.length);
       };
 
-      const searchCoursera = async (title) => {
-        try {
-          const url = `https://www.coursera.org/search?query=${encodeURIComponent(title)}`;
-          const { data: html } = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
-          const $ = cheerio.load(html);
-          const anchors = [];
-          $('a[href^="/learn/"], a[href^="/specializations/"]').each((i, el) => {
-            const href = $(el).attr('href');
-            const text = $(el).find('h2').text().trim() || $(el).attr('aria-label') || '';
-            if (href && text) anchors.push({ href, text });
-          });
-          anchors.sort((a, b) => score(title, b.text) - score(title, a.text));
-          if (anchors[0] && score(title, anchors[0].text) >= SIMILARITY_THRESHOLD) {
-            return `https://www.coursera.org${anchors[0].href}`;
-          }
-          // loose fallback: first anchor regardless
-          if (anchors[0]) return `https://www.coursera.org${anchors[0].href}`;
-        } catch (e) { /* ignore */ }
-        return null;
+      // Simple direct link generation based on platform and course name
+      const generateCourseLink = (courseName, platform) => {
+        const slug = courseName.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+          .trim();
+
+        switch (platform.toLowerCase()) {
+          case 'coursera':
+            // Coursera URLs are typically /learn/course-name or /specializations/course-name
+            return `https://www.coursera.org/search?query=${encodeURIComponent(courseName)}`;
+          case 'udemy':
+            // Udemy search URL
+            return `https://www.udemy.com/courses/search/?q=${encodeURIComponent(courseName)}`;
+          case 'edx':
+            return `https://www.edx.org/search?q=${encodeURIComponent(courseName)}`;
+          case 'khan academy':
+            return `https://www.khanacademy.org/search?referer=%2F&page_search_query=${encodeURIComponent(courseName)}`;
+          default:
+            // Fallback to Google search
+            return `https://www.google.com/search?q=${encodeURIComponent(courseName + ' online course ' + platform)}`;
+        }
       };
 
-      const searchWeb = async (title) => {
-        try {
-          const query = encodeURIComponent(`${title} online course`);
-          const url = `https://duckduckgo.com/html/?q=${query}`;
-          const { data: html } = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
-          const $ = cheerio.load(html);
-          const first = $('a.result__a').first();
-          if (first && first.attr('href')) {
-            return first.attr('href');
-          }
-        } catch (_) {}
-        return null;
-      };
+      const withLinks = structured.map((rec) => {
+        const title = rec.course || rec.title || rec.name;
+        if (!title) return null;
 
-      const withLinks = await Promise.all(
-        structured.map(async (rec) => {
-          const title = rec.course || rec.title || rec.name;
-          if (!title) return null;
-
-          // Try Coursera first (max 3)
-          const courseraLink = await searchCoursera(title);
-          if (courseraLink) {
-            return { ...rec, link: courseraLink, platform: 'Coursera' };
-          }
-
-          // Fallback: generic web search result
-          const webLink = await searchWeb(title);
-          if (webLink) {
-            return { ...rec, link: webLink, platform: 'Web' };
-          }
-          return null;
-        })
-      );
+        // Use the platform from AI response or default to searching
+        const platform = rec.platform || 'Coursera';
+        const link = generateCourseLink(title, platform);
+        
+        return {
+          ...rec,
+          course: title,
+          link: link,
+          platform: platform
+        };
+      });
 
       const filtered = withLinks.filter(Boolean);
       const output = filtered.slice(0, 5);
