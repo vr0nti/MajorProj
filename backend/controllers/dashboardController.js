@@ -202,11 +202,13 @@ const getAdminActivities = async () => {
     .limit(5);
   
   recentNotices.forEach(notice => {
-    activities.push({
-      type: 'notice',
-      description: `${notice.createdBy.name} created a notice: ${notice.title}`,
-      createdAt: notice.createdAt
-    });
+    if (notice.createdBy && notice.createdBy.name) {
+      activities.push({
+        type: 'notice',
+        description: `${notice.createdBy.name} created a notice: ${notice.title}`,
+        createdAt: notice.createdAt
+      });
+    }
   });
 
   // Get recent complaints
@@ -216,11 +218,13 @@ const getAdminActivities = async () => {
     .limit(5);
   
   recentComplaints.forEach(complaint => {
-    activities.push({
-      type: 'complaint',
-      description: `${complaint.createdBy.name} submitted a complaint: ${complaint.title}`,
-      createdAt: complaint.createdAt
-    });
+    if (complaint.createdBy && complaint.createdBy.name) {
+      activities.push({
+        type: 'complaint',
+        description: `${complaint.createdBy.name} submitted a complaint: ${complaint.title}`,
+        createdAt: complaint.createdAt
+      });
+    }
   });
 
   return activities.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
@@ -238,11 +242,13 @@ const getDepartmentAdminActivities = async (departmentId) => {
     .limit(5);
   
   recentNotices.forEach(notice => {
-    activities.push({
-      type: 'notice',
-      description: `${notice.createdBy.name} created a notice: ${notice.title}`,
-      createdAt: notice.createdAt
-    });
+    if (notice.createdBy && notice.createdBy.name) {
+      activities.push({
+        type: 'notice',
+        description: `${notice.createdBy.name} created a notice: ${notice.title}`,
+        createdAt: notice.createdAt
+      });
+    }
   });
 
   return activities.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
@@ -258,11 +264,13 @@ const getFacultyActivities = async (facultyId) => {
     .limit(5);
   
   recentAttendance.forEach(attendance => {
-    activities.push({
-      type: 'attendance',
-      description: `Attendance marked for ${attendance.class.name}`,
-      createdAt: attendance.createdAt
-    });
+    if (attendance.class && attendance.class.name) {
+      activities.push({
+        type: 'attendance',
+        description: `Attendance marked for ${attendance.class.name}`,
+        createdAt: attendance.createdAt
+      });
+    }
   });
 
   // Get grade activities
@@ -273,11 +281,13 @@ const getFacultyActivities = async (facultyId) => {
     .limit(5);
   
   recentGrades.forEach(grade => {
-    activities.push({
-      type: 'grade',
-      description: `Grade submitted for ${grade.student.name} in ${grade.subject.name}`,
-      createdAt: grade.createdAt
-    });
+    if (grade.student && grade.student.name && grade.subject && grade.subject.name) {
+      activities.push({
+        type: 'grade',
+        description: `Grade submitted for ${grade.student.name} in ${grade.subject.name}`,
+        createdAt: grade.createdAt
+      });
+    }
   });
 
   return activities.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
@@ -295,12 +305,14 @@ const getStudentActivities = async (studentId) => {
     .limit(5);
   
   recentAttendance.forEach(attendance => {
-    const record = (attendance.attendance || []).find(r => r.student.toString() === studentId.toString());
-    activities.push({
-      type: 'attendance',
-      description: `Attendance marked as ${record?.status || '-' } for ${attendance.class.name}`,
-      createdAt: attendance.createdAt
-    });
+    if (attendance.class && attendance.class.name) {
+      const record = (attendance.attendance || []).find(r => r.student.toString() === studentId.toString());
+      activities.push({
+        type: 'attendance',
+        description: `Attendance marked as ${record?.status || '-' } for ${attendance.class.name}`,
+        createdAt: attendance.createdAt
+      });
+    }
   });
 
   // // Get grade updates

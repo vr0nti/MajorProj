@@ -50,6 +50,15 @@ const timetableSchema = new mongoose.Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
+    // Optimization metadata
+    optimizationApplied: {
+      date: { type: Date },
+      type: { type: String }, // 'credit-based-distribution', 'workload-balancing', etc.
+      appliedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      metrics: {
+        type: mongoose.Schema.Types.Mixed // Store optimization metrics
+      }
+    },
   },
   { timestamps: true }
 );

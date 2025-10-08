@@ -38,6 +38,7 @@ import ChatInterface from './pages/ChatInterface';
 import CourseRecommendationsPage from './pages/CourseRecommendations';
 import AiChatBot from './pages/AiChatBot';
 import TimetableAnalytics from './pages/TimetableAnalytics';
+import TimetableOptimization from './pages/TimetableOptimization';
 
 // Page placeholders
 // Placeholder removed (unused)
@@ -358,6 +359,13 @@ function App() {
                   <ProtectedRoute roles={['admin', 'departmentAdmin']}>
                     <FirstLoginRedirect>
                       <PageWrapper><TimetableAnalytics /></PageWrapper>
+                    </FirstLoginRedirect>
+                  </ProtectedRoute>
+                } />
+                <Route path="/timetable-optimization" element={
+                  <ProtectedRoute roles={['departmentAdmin']}>
+                    <FirstLoginRedirect>
+                      <PageWrapper><TimetableOptimization /></PageWrapper>
                     </FirstLoginRedirect>
                   </ProtectedRoute>
                 } />

@@ -27,7 +27,7 @@ const getDashboard = async (req, res) => {
       .populate('classTeacher', 'name')
       .sort({ createdAt: -1 })
       .limit(5)
-      .select('name classTeacher createdAt');
+      .select('name fullName classTeacher createdAt semester');
 
     // Get recent faculty
     const recentFaculty = await User.find({ 
@@ -44,9 +44,9 @@ const getDashboard = async (req, res) => {
       totalSubjects,
       totalStudents,
       recentClasses: recentClasses.map(cls => ({
-        name: cls.name,
+        name: cls.fullName || cls.name,
         faculty: cls.classTeacher?.name || 'Unassigned',
-        subject: cls.specialization
+        subject: cls.semester || 'N/A'
       })),
       recentFaculty: recentFaculty.map(faculty => ({
         name: faculty.name,
@@ -65,20 +65,79 @@ const getClasses = async (req, res) => {
   try {
     const departmentId = req.user.department;
     const classes = await Class.find({ department: departmentId })
-      .populate('classTeacher', 'name')
+      .populate('classTeacher', 'name email specialization designation')
       .populate('timetable')
-      .sort({ createdAt: -1 });
+      .populate({
+        path: 'subjects.subject',
+        select: 'name code credits type'
+      })
+      .populate({
+        path: 'subjects.faculty',
+        select: 'name email specialization'
+      })
+      .populate('students', 'name rollNumber')
+      .populate('department', 'name code')
+      .sort({ semester: 1, name: 1 });
 
-    const formattedClasses = classes.map(cls => ({
-      _id: cls._id,
-      name: cls.name || `${cls.program} ${cls.specialization}`,
-      subject: cls.specialization,
-      faculty: cls.classTeacher?.name || 'Unassigned',
-      schedule: cls.timetable?.schedule || 'Not scheduled',
-      room: cls.timetable?.room || 'TBD',
-      capacity: cls.capacity || cls.sections.reduce((total, section) => total + section.students.length, 0),
-      description: cls.description || `${cls.program} in ${cls.specialization}`
-    }));
+    const formattedClasses = classes.map(cls => {
+      // Calculate statistics
+      const studentCount = cls.students ? cls.students.length : 0;
+      const capacityUtilization = cls.capacity > 0 ? ((studentCount / cls.capacity) * 100).toFixed(1) : 0;
+      const subjectsAssigned = cls.subjects ? cls.subjects.filter(s => s.faculty).length : 0;
+      const totalSubjects = cls.subjects ? cls.subjects.length : 0;
+      const subjectAssignmentRate = totalSubjects > 0 ? ((subjectsAssigned / totalSubjects) * 100).toFixed(1) : 0;
+      
+      // Get subjects summary
+      const subjectsSummary = cls.subjects ? cls.subjects.map(s => ({
+        name: s.subject?.name || 'Unknown',
+        code: s.subject?.code || 'N/A',
+        credits: s.subject?.credits || 0,
+        type: s.subject?.type || 'theory',
+        faculty: s.faculty?.name || 'Unassigned',
+        facultySpecialization: s.faculty?.specialization || 'N/A'
+      })) : [];
+      
+      return {
+        _id: cls._id,
+        name: cls.name,
+        fullName: cls.fullName,
+        semester: cls.semester,
+        academicYear: cls.academicYear,
+        department: {
+          name: cls.department?.name || 'Unknown',
+          code: cls.department?.code || 'N/A'
+        },
+        classTeacher: {
+          name: cls.classTeacher?.name || 'Unassigned',
+          email: cls.classTeacher?.email || '',
+          specialization: cls.classTeacher?.specialization || 'N/A',
+          designation: cls.classTeacher?.designation || 'Faculty'
+        },
+        capacity: cls.capacity,
+        currentStrength: studentCount,
+        capacityUtilization: parseFloat(capacityUtilization),
+        subjects: {
+          total: totalSubjects,
+          assigned: subjectsAssigned,
+          assignmentRate: parseFloat(subjectAssignmentRate),
+          details: subjectsSummary,
+          totalCredits: subjectsSummary.reduce((sum, s) => sum + (s.credits || 0), 0)
+        },
+        timetable: {
+          exists: cls.timetable ? true : false,
+          status: cls.timetable?.status || 'Not Created'
+        },
+        status: cls.status,
+        createdAt: cls.createdAt,
+        updatedAt: cls.updatedAt,
+        // Legacy fields for backward compatibility
+        subject: cls.subjects && cls.subjects.length > 0 ? cls.subjects[0].subject?.name : 'Multiple Subjects',
+        faculty: cls.classTeacher?.name || 'Unassigned',
+        schedule: cls.timetable?.schedule || 'Not scheduled',
+        room: cls.timetable?.room || 'TBD',
+        description: `${cls.fullName} - ${cls.semester} (${studentCount}/${cls.capacity} students)`
+      };
+    });
 
     res.json(formattedClasses);
   } catch (error) {
@@ -951,15 +1010,35 @@ const getSubjectsList = async (req, res) => {
 const getClassesList = async (req, res) => {
   try {
     const departmentId = req.user.department;
-    const classes = await Class.find({ department: departmentId })
-      .select('name program specialization semester')
-      .sort({ program: 1, specialization: 1 });
+    const classes = await Class.find({ department: departmentId, status: 'active' })
+      .populate('classTeacher', 'name specialization')
+      .populate({
+        path: 'subjects.subject',
+        select: 'name code credits'
+      })
+      .populate('students', '_id')
+      .select('name fullName semester academicYear capacity currentStrength')
+      .sort({ semester: 1, name: 1 });
 
-    const formattedClasses = classes.map(cls => ({
-      _id: cls._id,
-      name: cls.name || `${cls.program} ${cls.specialization}`,
-      semester: cls.semester
-    }));
+    const formattedClasses = classes.map(cls => {
+      const studentCount = cls.students ? cls.students.length : cls.currentStrength || 0;
+      const capacityUtilization = cls.capacity > 0 ? ((studentCount / cls.capacity) * 100).toFixed(1) : 0;
+      const totalSubjects = cls.subjects ? cls.subjects.length : 0;
+      
+      return {
+        _id: cls._id,
+        name: cls.name,
+        fullName: cls.fullName,
+        semester: cls.semester,
+        academicYear: cls.academicYear,
+        studentCount: studentCount,
+        capacity: cls.capacity,
+        capacityUtilization: parseFloat(capacityUtilization),
+        totalSubjects: totalSubjects,
+        classTeacher: cls.classTeacher?.name || 'Unassigned',
+        classTeacherSpecialization: cls.classTeacher?.specialization || 'N/A'
+      };
+    });
    
     res.json(formattedClasses);
   } catch (error) {

@@ -58,6 +58,7 @@ const Dashboard = () => {
           { title: 'Manage Faculty', path: '/department-admin/faculty', icon: '👨‍🏫' },
           { title: 'Manage Students', path: '/department-admin/students', icon: '👨‍🎓' },
           { title: 'Manage Grades', path: '/department-admin/grades', icon: '📝' },
+          { title: 'Timetable Optimization', path: '/timetable-optimization', icon: '🚀' },
           { title: 'Timetable Analytics', path: '/timetable-analytics', icon: '📈' },
           { title: 'Notices', path: '/notice-board', icon: '📢' },
           { title: 'Complaints', path: '/complaints', icon: '📝' },

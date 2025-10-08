@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const timetableController = require('../controllers/timetableController');
+const timetableOptimizationController = require('../controllers/timetableOptimizationController');
 const auth = require('../middlewares/auth');
 
 // Basic CRUD
@@ -15,6 +16,7 @@ router.get('/teacher/:teacherId', auth, timetableController.getTeacherTimetable)
 router.get('/student/:studentId', auth, timetableController.getStudentTimetable);
 
 // Analytics & Statistics
+router.get('/analytics/comprehensive', auth, timetableController.getTimetableAnalytics);
 router.get('/analytics/faculty-workload', auth, timetableController.getFacultyWorkload);
 router.get('/analytics/room-utilization', auth, timetableController.getRoomUtilization);
 
@@ -23,5 +25,10 @@ router.post('/check-conflicts', auth, timetableController.checkConflicts);
 
 // Bulk operations
 router.post('/copy', auth, timetableController.copyTimetable);
+
+// Optimization routes - NEW CLEAN IMPLEMENTATION
+router.get('/optimize/view', auth, timetableOptimizationController.getTimetablesBySemester);
+router.post('/optimize/suggestions', auth, timetableOptimizationController.generateIntelligentSuggestions);
+router.get('/optimize/analytics', auth, timetableOptimizationController.getComprehensiveAnalytics);
 
 module.exports = router;

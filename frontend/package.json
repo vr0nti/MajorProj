@@ -9,11 +9,14 @@
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.0",
+    "react-markdown": "^8.0.7",
     "react-router-dom": "^7.6.2",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5",
-    "socket.io-client": "^4.8.1",
-    "react-markdown": "^8.0.7"
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "socket.io-client": "^4.8.1"
   },
   "scripts": {
     "start": "react-scripts start",

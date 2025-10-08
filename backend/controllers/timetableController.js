@@ -381,7 +381,14 @@ exports.getFacultyWorkload = async (req, res) => {
     
     const timetables = await Timetable.find(query)
       .populate('class', 'name fullName')
-      .populate('schedule.periods.faculty', 'name email');
+      .populate({
+        path: 'schedule.periods.subject',
+        select: 'name code'
+      })
+      .populate({
+        path: 'schedule.periods.faculty',
+        select: 'name email designation'
+      });
     
     // Calculate workload for each faculty
     const workloadMap = {};
@@ -391,12 +398,16 @@ exports.getFacultyWorkload = async (req, res) => {
         for (const period of daySchedule.periods) {
           if (period.type === 'class' && period.faculty) {
             const facultyId = period.faculty._id || period.faculty;
-            const facultyName = period.faculty.name || 'Unknown';
+            const facultyName = period.faculty.name || 'Unknown Faculty';
+            const facultyEmail = period.faculty.email || '';
+            const facultyDesignation = period.faculty.designation || '';
             
             if (!workloadMap[facultyId]) {
               workloadMap[facultyId] = {
                 facultyId,
                 facultyName,
+                facultyEmail,
+                facultyDesignation,
                 totalHours: 0,
                 periodsCount: 0,
                 classes: new Set(),
@@ -409,8 +420,11 @@ exports.getFacultyWorkload = async (req, res) => {
             workloadMap[facultyId].totalHours += duration;
             workloadMap[facultyId].periodsCount += 1;
             workloadMap[facultyId].classes.add(tt.class?.fullName || tt.class?.name);
+            
+            // Add subject name (properly populated)
             if (period.subject) {
-              workloadMap[facultyId].subjects.add(period.subject.name || period.subject);
+              const subjectName = period.subject.name || 'Unknown Subject';
+              workloadMap[facultyId].subjects.add(subjectName);
             }
           }
         }
@@ -421,12 +435,14 @@ exports.getFacultyWorkload = async (req, res) => {
     const workload = Object.values(workloadMap).map(item => ({
       facultyId: item.facultyId,
       facultyName: item.facultyName,
+      facultyEmail: item.facultyEmail,
+      facultyDesignation: item.facultyDesignation,
       totalHours: Math.round(item.totalHours * 100) / 100,
       periodsCount: item.periodsCount,
       classesCount: item.classes.size,
       subjectsCount: item.subjects.size,
-      classes: Array.from(item.classes),
-      subjects: Array.from(item.subjects)
+      classes: Array.from(item.classes).filter(Boolean),
+      subjects: Array.from(item.subjects).filter(Boolean)
     }));
     
     // Sort by totalHours descending
@@ -585,6 +601,186 @@ exports.copyTimetable = async (req, res) => {
     });
   } catch (err) {
     console.error('Copy timetable error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get comprehensive timetable analytics
+exports.getTimetableAnalytics = async (req, res) => {
+  try {
+    const { departmentId, academicYear, semester } = req.query;
+    
+    let query = {};
+    if (departmentId) query.department = departmentId;
+    if (academicYear) query.academicYear = academicYear;
+    if (semester) query.semester = semester;
+    
+    const timetables = await Timetable.find(query)
+      .populate('class', 'name fullName semester')
+      .populate('department', 'name code')
+      .populate({
+        path: 'schedule.periods.subject',
+        select: 'name code credits'
+      })
+      .populate({
+        path: 'schedule.periods.faculty',
+        select: 'name email designation'
+      });
+    
+    // Initialize analytics data
+    const analytics = {
+      totalTimetables: timetables.length,
+      totalClasses: new Set(),
+      totalSubjects: new Set(),
+      totalFaculty: new Set(),
+      facultyWorkload: {},
+      subjectDistribution: {},
+      roomUtilization: {},
+      timeSlotAnalysis: {},
+      weeklyDistribution: {
+        monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0, saturday: 0
+      },
+      averagePeriods: 0,
+      conflictFreeSchedules: 0
+    };
+    
+    let totalPeriods = 0;
+    
+    // Process each timetable
+    for (const timetable of timetables) {
+      analytics.totalClasses.add(timetable.class?.fullName || timetable.class?.name);
+      
+      // Process each day's schedule
+      for (const daySchedule of timetable.schedule) {
+        const day = daySchedule.day;
+        
+        for (const period of daySchedule.periods) {
+          if (period.type === 'class') {
+            totalPeriods++;
+            
+            // Count periods per day
+            if (analytics.weeklyDistribution[day] !== undefined) {
+              analytics.weeklyDistribution[day]++;
+            }
+            
+            // Faculty analysis
+            if (period.faculty) {
+              const facultyId = period.faculty._id || period.faculty;
+              const facultyName = period.faculty.name || 'Unknown Faculty';
+              const facultyEmail = period.faculty.email || '';
+              
+              analytics.totalFaculty.add(facultyId);
+              
+              if (!analytics.facultyWorkload[facultyId]) {
+                analytics.facultyWorkload[facultyId] = {
+                  id: facultyId,
+                  name: facultyName,
+                  email: facultyEmail,
+                  designation: period.faculty.designation || '',
+                  totalPeriods: 0,
+                  totalHours: 0,
+                  subjects: new Set(),
+                  classes: new Set()
+                };
+              }
+              
+              const duration = calculateDuration(period.startTime, period.endTime);
+              analytics.facultyWorkload[facultyId].totalPeriods++;
+              analytics.facultyWorkload[facultyId].totalHours += duration;
+              analytics.facultyWorkload[facultyId].classes.add(timetable.class?.fullName);
+            }
+            
+            // Subject analysis
+            if (period.subject) {
+              const subjectName = period.subject.name || 'Unknown Subject';
+              const subjectCode = period.subject.code || '';
+              const subjectCredits = period.subject.credits || 0;
+              
+              analytics.totalSubjects.add(period.subject._id);
+              
+              if (!analytics.subjectDistribution[subjectName]) {
+                analytics.subjectDistribution[subjectName] = {
+                  name: subjectName,
+                  code: subjectCode,
+                  credits: subjectCredits,
+                  totalPeriods: 0,
+                  classes: new Set(),
+                  faculty: new Set()
+                };
+              }
+              
+              analytics.subjectDistribution[subjectName].totalPeriods++;
+              analytics.subjectDistribution[subjectName].classes.add(timetable.class?.fullName);
+              
+              if (period.faculty) {
+                analytics.subjectDistribution[subjectName].faculty.add(period.faculty.name);
+                analytics.facultyWorkload[period.faculty._id]?.subjects.add(subjectName);
+              }
+            }
+            
+            // Room analysis
+            if (period.room) {
+              const room = period.room.trim();
+              
+              if (!analytics.roomUtilization[room]) {
+                analytics.roomUtilization[room] = {
+                  room,
+                  totalPeriods: 0,
+                  totalHours: 0,
+                  classes: new Set()
+                };
+              }
+              
+              const duration = calculateDuration(period.startTime, period.endTime);
+              analytics.roomUtilization[room].totalPeriods++;
+              analytics.roomUtilization[room].totalHours += duration;
+              analytics.roomUtilization[room].classes.add(timetable.class?.fullName);
+            }
+            
+            // Time slot analysis
+            const timeSlot = `${period.startTime}-${period.endTime}`;
+            if (!analytics.timeSlotAnalysis[timeSlot]) {
+              analytics.timeSlotAnalysis[timeSlot] = 0;
+            }
+            analytics.timeSlotAnalysis[timeSlot]++;
+          }
+        }
+      }
+    }
+    
+    // Convert Sets to counts and clean up data
+    analytics.totalClasses = analytics.totalClasses.size;
+    analytics.totalSubjects = analytics.totalSubjects.size;
+    analytics.totalFaculty = analytics.totalFaculty.size;
+    analytics.averagePeriods = analytics.totalTimetables > 0 ? Math.round(totalPeriods / analytics.totalTimetables) : 0;
+    
+    // Format faculty workload
+    analytics.facultyWorkload = Object.values(analytics.facultyWorkload).map(faculty => ({
+      ...faculty,
+      totalHours: Math.round(faculty.totalHours * 100) / 100,
+      subjects: Array.from(faculty.subjects),
+      classes: Array.from(faculty.classes),
+      workloadLevel: faculty.totalPeriods > 25 ? 'Heavy' : faculty.totalPeriods > 15 ? 'Moderate' : 'Light'
+    })).sort((a, b) => b.totalPeriods - a.totalPeriods);
+    
+    // Format subject distribution
+    analytics.subjectDistribution = Object.values(analytics.subjectDistribution).map(subject => ({
+      ...subject,
+      classes: Array.from(subject.classes),
+      faculty: Array.from(subject.faculty)
+    })).sort((a, b) => b.totalPeriods - a.totalPeriods);
+    
+    // Format room utilization
+    analytics.roomUtilization = Object.values(analytics.roomUtilization).map(room => ({
+      ...room,
+      totalHours: Math.round(room.totalHours * 100) / 100,
+      classes: Array.from(room.classes),
+      utilizationPercentage: Math.round((room.totalHours / (6 * 8)) * 100) // 6 days, 8 hours per day
+    })).sort((a, b) => b.utilizationPercentage - a.utilizationPercentage);
+    
+    res.json(analytics);
+  } catch (err) {
+    console.error('Timetable analytics error:', err);
     res.status(500).json({ message: err.message });
   }
 };

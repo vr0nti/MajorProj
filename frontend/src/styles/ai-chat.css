@@ -97,21 +97,226 @@
   cursor: not-allowed;
 }
 
-/* Markdown inside assistant bubble */
-.markdown-content p {
-  margin: 0 0 0.5rem 0;
+/* Enhanced Markdown Styling */
+.markdown-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: #343a40;
 }
 
+.markdown-content p {
+  margin: 0 0 0.75rem 0;
+  line-height: 1.6;
+}
+
+/* Enhanced Lists */
 .markdown-content ul,
 .markdown-content ol {
-  margin: 0 0 0.5rem 1.2rem;
-  padding-left: 1.2rem;
+  margin: 0.5rem 0 0.75rem 1.5rem;
+  padding-left: 0;
 }
 
 .markdown-content li {
-  margin: 0.2rem 0;
+  margin: 0.25rem 0;
+  line-height: 1.5;
 }
 
 .markdown-content li p {
   margin: 0;
-} 
+  display: inline;
+}
+
+/* Headers */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  margin: 0.75rem 0 0.5rem 0;
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.3;
+}
+
+.markdown-content h1 { font-size: 1.5em; }
+.markdown-content h2 { font-size: 1.3em; }
+.markdown-content h3 { font-size: 1.2em; }
+.markdown-content h4 { font-size: 1.1em; }
+.markdown-content h5 { font-size: 1.05em; }
+.markdown-content h6 { font-size: 1em; }
+
+/* Table Styling */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.9em;
+  min-width: 300px;
+  margin: 0.75rem 0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content thead tr {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.markdown-content th,
+.markdown-content td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.markdown-content th {
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+}
+
+.markdown-content tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.markdown-content tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.markdown-content tbody tr:hover {
+  background-color: #e3f2fd;
+}
+
+.markdown-content td {
+  border-left: 3px solid transparent;
+}
+
+/* Code Styling */
+.markdown-content code {
+  background: #f1f3f4;
+  border: 1px solid #e8eaed;
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.85em;
+  color: #c7254e;
+}
+
+.markdown-content pre {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #333;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+/* Blockquotes */
+.markdown-content blockquote {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  border-radius: 0 4px 4px 0;
+  color: #495057;
+  font-style: italic;
+}
+
+.markdown-content blockquote p {
+  margin: 0;
+}
+
+/* Strong and Emphasis */
+.markdown-content strong {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: #495057;
+}
+
+/* User Message Styling */
+.user-message {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Horizontal Rules */
+.markdown-content hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Links */
+.markdown-content a {
+  color: #007bff;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom-color 0.2s ease;
+}
+
+.markdown-content a:hover {
+  border-bottom-color: #007bff;
+}
+
+/* Math Formulas (KaTeX) */
+.markdown-content .katex {
+  font-size: 1.05em;
+}
+
+.markdown-content .katex-display {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.markdown-content .katex-display > .katex {
+  font-size: 1.1em;
+}
+
+/* Math inline */
+.markdown-content .math-inline {
+  background: #f1f3f4;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .markdown-content table {
+    font-size: 0.8em;
+  }
+  
+  .markdown-content th,
+  .markdown-content td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .ai-chat-container {
+    padding: 1rem;
+  }
+  
+  .chat-bubble {
+    max-width: 90%;
+  }
+}
